@@ -1,2 +1,2 @@
 export * from './lib/decorators';
-export * from './lib/index';
+export * from './lib/main';

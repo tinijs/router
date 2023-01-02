@@ -1,9 +1,11 @@
-import {getAppInstance} from '@tinijs/core';
+import {getRouter} from './main';
 
 export function UseRouter() {
   return function (target: Object, propertyKey: string) {
     Reflect.defineProperty(target, propertyKey, {
-      get: () => getAppInstance().$router,
+      get: () => getRouter(),
+      enumerable: false,
+      configurable: false,
     });
   };
 }
