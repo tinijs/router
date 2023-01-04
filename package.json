@@ -5,6 +5,9 @@
   "author": "Lam Nhan",
   "homepage": "https://tinijs.lamnhan.com",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "src/public-api.js",
   "types": "src/public-api.d.ts",
   "files": [
@@ -15,6 +18,7 @@
   "scripts": {
     "compile": "tsc",
     "build": "npm run compile",
+    "deploy": "npm run build && npm publish",
     "lint": "gts lint",
     "fix": "gts fix"
   },
@@ -38,7 +42,7 @@
     "@vaadin/router": "^1.7.4"
   },
   "peerDependencies": {
-    "@tinijs/core": "file:../core/tinijs-core-0.0.1.tgz"
+    "@tinijs/core": "0.0.1"
   },
   "devDependencies": {
     "gts": "^4.0.0",
