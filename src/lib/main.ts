@@ -17,4 +17,4 @@ export function getRouter(): null | Router {
   );
 }
 
-export {Router, Route};
+export * from '@vaadin/router';
