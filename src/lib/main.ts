@@ -1,20 +1,43 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {Router, Route} from '@vaadin/router';
-import {getAppInstance, TiniApp, Global, ROUTER_OUTLET} from '@tinijs/core';
+import {
+  GLOBAL,
+  ROUTER_OUTLET_ID,
+  getAppInstance,
+  TiniApp,
+  COMPONENT_TYPES,
+  LIFECYCLE_HOOKS,
+  registerGlobalHook,
+} from '@tinijs/core';
+import {isCurrentRoute, showNavIndicator, hideNavIndicator} from './methods';
 
 export function registerRoutes(routes: Route[]) {
   const app = getAppInstance() as TiniApp;
-  const router = new Router(app.renderRoot.querySelector(`#${ROUTER_OUTLET}`));
+  const router = new Router(
+    app.renderRoot.querySelector(`#${ROUTER_OUTLET_ID}`)
+  ) as any;
   router.setRoutes(routes);
-  return router;
+  // handle nav indicator
+  if (GLOBAL.$tiniAppOptions?.navIndicator) {
+    router._indicatorSchedule = null;
+    // exit
+    registerGlobalHook(
+      COMPONENT_TYPES.PAGE,
+      LIFECYCLE_HOOKS.ON_CHILDREN_READY,
+      () => {
+        if (router._indicatorSchedule === null) return;
+        hideNavIndicator();
+        // cancel schedule (if scheduled)
+        clearTimeout(router._indicatorSchedule);
+        router._indicatorSchedule = null;
+      }
+    );
+    // entry
+    window.addEventListener('vaadin-router-go', (e: any) => {
+      if (isCurrentRoute(router, (e as CustomEvent).detail)) return;
+      router._indicatorSchedule = setTimeout(() => showNavIndicator(), 500);
+    });
+  }
+  // result
+  return router as Router;
 }
-
-export function getRouter(): null | Router {
-  const appOrGlobal = getAppInstance(true);
-  return (
-    (appOrGlobal as TiniApp).$router ||
-    (appOrGlobal as Global).$tiniRouter ||
-    null
-  );
-}
-
-export * from '@vaadin/router';

@@ -42,7 +42,7 @@
     "@vaadin/router": "^1.7.4"
   },
   "peerDependencies": {
-    "@tinijs/core": "0.0.1"
+    "@tinijs/core": "file:../core/tinijs-core-0.0.1.tgz"
   },
   "devDependencies": {
     "gts": "^4.0.0",
