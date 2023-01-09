@@ -1,18 +1,15 @@
 import {Router} from '@vaadin/router';
 import {getAppInstance, TiniApp, Global} from '@tinijs/core';
-import {NavIndicatorComponent} from './types';
+import {NavIndicatorComponent, ContextLite} from './types';
 import {NAV_INDICATOR_ID, NAV_INDICATOR, CLASS_ACTIVE} from './consts';
 
-export function isCurrentRoute(
-  router: Router,
-  route: {pathname: string; search: string; hash: string}
-) {
+export function isCurrentRoute(router: Router, context: ContextLite) {
   const {
     pathname: currPathname,
     search: currSearch,
     hash: currHash,
   } = (router as any).__previousContext || {};
-  const {pathname, search, hash} = route || {};
+  const {pathname, search, hash} = context || {};
   return (
     pathname === currPathname && search === currSearch && hash === currHash
   );
