@@ -1,9 +1,9 @@
 {
   "name": "@tinijs/router",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "The router module for the TiniJS framework.",
   "author": "Lam Nhan",
-  "homepage": "https://tinijs.lamnhan.com",
+  "homepage": "https://tinijs.dev",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -42,7 +42,7 @@
     "@vaadin/router": "^1.7.4"
   },
   "peerDependencies": {
-    "@tinijs/core": "0.0.2"
+    "@tinijs/core": "file:../core/tinijs-core-0.0.3.tgz"
   },
   "devDependencies": {
     "gts": "^4.0.0",
