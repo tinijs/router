@@ -40,7 +40,8 @@
     "url": "https://github.com/tinijs/core/issues"
   },
   "peerDependencies": {
-    "@tinijs/core": "file:../core/tinijs-core-0.0.3.tgz"
+    "@tinijs/core": "file:../core/tinijs-core-0.1.0.tgz",
+    "lit": "^3.0.0-pre.0"
   },
   "devDependencies": {
     "gts": "^4.0.1",

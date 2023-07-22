@@ -1,6 +1,6 @@
 import {getRouter, getNavIndicator} from './methods';
 
-export function UseRouter() {
+export function GetRouter() {
   return function (target: Object, propertyKey: string) {
     Reflect.defineProperty(target, propertyKey, {
       get: () => getRouter(),
@@ -10,7 +10,7 @@ export function UseRouter() {
   };
 }
 
-export function UseNavIndicator() {
+export function GetNavIndicator() {
   return function (target: Object, propertyKey: string) {
     Reflect.defineProperty(target, propertyKey, {
       get: () => getNavIndicator(),

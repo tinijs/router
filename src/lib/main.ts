@@ -1,43 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Router, Route} from '@vaadin/router';
-import {
-  GLOBAL,
-  ROUTER_OUTLET_ID,
-  getAppInstance,
-  TiniApp,
-  COMPONENT_TYPES,
-  LIFECYCLE_HOOKS,
-  registerGlobalHook,
-} from '@tinijs/core';
-import {isCurrentRoute, showNavIndicator, hideNavIndicator} from './methods';
+import {GLOBAL, registerGlobalHook, ComponentTypes, LifecycleHooks} from '@tinijs/core';
+import {Route, RouterOptions} from './types';
+import {hideNavIndicator, showNavIndicator} from './methods';
+import {TiniRouter} from './router';
 
-export function registerRoutes(routes: Route[]) {
-  const app = getAppInstance() as TiniApp;
-  const router = new Router(
-    app.renderRoot.querySelector(`#${ROUTER_OUTLET_ID}`)
-  ) as any;
-  router.setRoutes(routes);
+export function createRouter(routes: Route[], options: RouterOptions = {}) {
+  const router = new TiniRouter(routes, options).init();
   // handle nav indicator
   if (GLOBAL.$tiniAppOptions?.navIndicator) {
-    router._indicatorSchedule = null;
+    router.indicatorSchedule = null;
     // exit
     registerGlobalHook(
-      COMPONENT_TYPES.PAGE,
-      LIFECYCLE_HOOKS.ON_CHILDREN_READY,
+      ComponentTypes.Page,
+      LifecycleHooks.OnChildrenReady,
       () => {
-        if (router._indicatorSchedule === null) return;
+        if (router.indicatorSchedule === null) return;
         hideNavIndicator();
         // cancel schedule (if scheduled)
-        clearTimeout(router._indicatorSchedule);
-        router._indicatorSchedule = null;
+        clearTimeout(router.indicatorSchedule);
+        router.indicatorSchedule = null;
       }
     );
     // entry
-    window.addEventListener('vaadin-router-go', (e: any) => {
-      if (isCurrentRoute(router, (e as CustomEvent).detail)) return;
-      router._indicatorSchedule = setTimeout(() => showNavIndicator(), 500);
+    window.addEventListener('route', e => {
+      const {url} = (e as CustomEvent).detail;
+      if (url.pathname === location.pathname) return;
+      router.indicatorSchedule = setTimeout(() => showNavIndicator(), 500);
     });
   }
   // result
-  return router as Router;
+  return router;
 }

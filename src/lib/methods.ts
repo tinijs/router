@@ -1,27 +1,24 @@
-import {Router} from '@vaadin/router';
 import {getAppInstance, TiniApp, Global} from '@tinijs/core';
-import {NavIndicatorComponent, ContextLite} from './types';
+
+import {NavIndicatorComponent} from './types';
 import {NAV_INDICATOR_ID, NAV_INDICATOR, CLASS_ACTIVE} from './consts';
+import {TiniRouter} from './router';
 
-export function isCurrentRoute(router: Router, context: ContextLite) {
-  const {
-    pathname: currPathname,
-    search: currSearch,
-    hash: currHash,
-  } = (router as any).__previousContext || {};
-  const {pathname, search, hash} = context || {};
-  return (
-    pathname === currPathname && search === currSearch && hash === currHash
-  );
-}
-
-export function getRouter(): null | Router {
+export function getRouter(): null | TiniRouter {
   const appOrGlobal = getAppInstance(true);
   return (
     (appOrGlobal as TiniApp).$router ||
     (appOrGlobal as Global).$tiniRouter ||
     null
   );
+}
+
+export function go(to: string) {
+  const url = new URL(to, location.origin);
+  if (url.href !== location.href) {
+    history.pushState({}, '', url.href);
+    dispatchEvent(new PopStateEvent('popstate'));
+  }
 }
 
 export function getNavIndicator() {
