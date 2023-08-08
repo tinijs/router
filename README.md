@@ -1,8 +1,8 @@
 # TiniJS Router 
 
-The router module for the TiniJS framework.
+The official router module for the TiniJS framework. It is currently under development.
 
-It uses the [@vaadin/router](https://github.com/vaadin/router) under the hood.
+Another option for adding routes to a TiniJS app is using [@vaadin/router](https://github.com/vaadin/router).
 
 ## Install
 
@@ -10,7 +10,7 @@ To manually install the module: `npm i @tinijs/router`
 
 It is recommended to download the [Skeleton](https://github.com/tinijs/skeleton) for a ready-to-use structured project.
 
-For more, please visit: <https://tinijs.dev>
+For more, please visit: <https://tinijs.dev> (TODO)
 
 ## Usage
 
@@ -19,40 +19,40 @@ For more, please visit: <https://tinijs.dev>
 ```ts
 import {Route} from '@tinijs/router';
 
-const routes: Route[] = [
+export default [
   {
     path: '',
-    component: 'layout-default',
+    component: 'app-layout-default',
     children: [
       {
         path: '',
-        component: 'page-home',
+        component: 'app-page-home',
+        action: () => import('./pages/home'),
       },
       {
-        path: '(.*)',
-        component: 'page-404',
+        path: '**',
+        component: 'app-page-404',
+        action: () => import('./pages/404'),
       },
     ],
   },
-];
-
-export default routes;
-export type Routes = typeof routes;
+] as Route[];
 ```
 
 - Register the routes in `app.ts`
 
 ```ts
-import {registerRoutes, Router} from '@tinijs/router';
+import {TiniComponent, App, html} from '@tinijs/core';
+import {createRouter} from '@tinijs/router';
 
 import routes from './routes';
 
 @App()
 export class AppRoot extends TiniComponent {
-  $router!: Router;
+  public readonly $router = createRouter(routes, {linkTrigger: true});
 
-  onReady() {
-    this.$router = registerRoutes(routes);
+  protected render() {
+    return html`<router-outlet .router=${this.$router}></router-outlet>`;
   }
 }
 ```
