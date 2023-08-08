@@ -6,7 +6,7 @@ import {TiniRouterOutlet} from './router-outlet';
 export class TiniRouter {
   private outletCallback?: (result: MatchResult) => void;
   private readonly flatRoutes: Record<string, {layout?: Route; page: Route}>;
-  
+
   indicatorSchedule: null | number = null;
 
   constructor(
@@ -92,19 +92,22 @@ export class TiniRouter {
 
   private buildFlatRoutes(routes: Route[]) {
     const processPath = (path: string) => path.replace(/^\/|\/$/g, '');
-    return routes.reduce((result, route) => {
-      if (!route.children?.length) {
-        const id = `/${processPath(route.path)}`;
-        result[id] = {page: route};
-      } else {
-        route.children.forEach(child => {
-          const id =
-            (!route.path ? '' : `/${processPath(route.path)}`) +
-            (!child.path ? '' : `/${processPath(child.path)}`);
-          result[id || '/'] = {layout: route, page: child};
-        });
-      }
-      return result;
-    }, {} as TiniRouter['flatRoutes']);
+    return routes.reduce(
+      (result, route) => {
+        if (!route.children?.length) {
+          const id = `/${processPath(route.path)}`;
+          result[id] = {page: route};
+        } else {
+          route.children.forEach(child => {
+            const id =
+              (!route.path ? '' : `/${processPath(route.path)}`) +
+              (!child.path ? '' : `/${processPath(child.path)}`);
+            result[id || '/'] = {layout: route, page: child};
+          });
+        }
+        return result;
+      },
+      {} as TiniRouter['flatRoutes']
+    );
   }
 }

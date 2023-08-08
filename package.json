@@ -13,13 +13,10 @@
   "files": [
     "src",
     "!**/*.ts",
-    "**/*.d.ts",
-    "auto-imports.json"
+    "**/*.d.ts"
   ],
   "scripts": {
-    "compile": "tsc",
-    "build": "npm run compile",
-    "deploy": "npm run build && npm publish",
+    "build": "tsc",
     "lint": "gts lint",
     "fix": "gts fix"
   },
@@ -40,11 +37,11 @@
     "url": "https://github.com/tinijs/core/issues"
   },
   "peerDependencies": {
-    "@tinijs/core": "file:../core/tinijs-core-0.1.0.tgz",
+    "@tinijs/core": "^0.1.0",
     "lit": "^3.0.0-pre.0"
   },
   "devDependencies": {
-    "gts": "^4.0.1",
+    "gts": "^5.0.0",
     "typescript": "~5.1.6"
   }
 }

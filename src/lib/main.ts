@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {GLOBAL, registerGlobalHook, ComponentTypes, LifecycleHooks} from '@tinijs/core';
+import {
+  GLOBAL,
+  registerGlobalHook,
+  ComponentTypes,
+  LifecycleHooks,
+} from '@tinijs/core';
 import {Route, RouterOptions} from './types';
 import {hideNavIndicator, showNavIndicator} from './methods';
 import {TiniRouter} from './router';
