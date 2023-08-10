@@ -1,4 +1,5 @@
 export interface Route {
+  title?: string;
   path: string;
   component: string;
   action?: () => Promise<unknown>;
