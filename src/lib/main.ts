@@ -29,7 +29,7 @@ export function createRouter(routes: Route[], options: RouterOptions = {}) {
     // entry
     window.addEventListener('route', e => {
       const {url} = (e as CustomEvent).detail;
-      if (url.pathname === location.pathname) return;
+      if (url.pathname === window.location.pathname) return;
       router.indicatorSchedule = setTimeout(() => showNavIndicator(), 500);
     });
   }

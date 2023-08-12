@@ -14,8 +14,8 @@ export function getRouter(): null | TiniRouter {
 }
 
 export function go(to: string) {
-  const url = new URL(to, location.origin);
-  if (url.href !== location.href) {
+  const url = new URL(to, window.location.origin);
+  if (url.href !== window.location.href) {
     history.pushState({}, '', url.href);
     dispatchEvent(new PopStateEvent('popstate'));
   }

@@ -12,8 +12,8 @@ export class TiniRouterOutlet extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     if (!this.router) throw new Error('Missing the TiniRouter instance.');
-    (this.router as any).setOutletCallback(this.handleRoute.bind(this));
-    this.handleRoute(this.router.match(new URL(location.href)));
+    this.router.setCallback(this.handleRoute.bind(this));
+    this.handleRoute(this.router.match(new URL(window.location.href)));
   }
 
   private async handleRoute({layoutRoute, pageRoute}: MatchResult) {

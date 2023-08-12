@@ -4,9 +4,8 @@ import {go} from './methods';
 import {TiniRouterOutlet} from './router-outlet';
 
 export class TiniRouter {
-  private outletCallback?: (result: MatchResult) => void;
+  private callback?: (result: MatchResult) => void;
   private readonly flatRoutes: Record<string, {layout?: Route; page: Route}>;
-
   indicatorSchedule: null | number = null;
 
   constructor(
@@ -26,6 +25,11 @@ export class TiniRouter {
     return this as TiniRouter;
   }
 
+  setCallback(cb: (result: MatchResult) => void) {
+    this.callback = cb;
+    return this as TiniRouter;
+  }
+
   match(url: URL): MatchResult {
     // TODO: fix this
     // FIX ME: this is a very naive implementation
@@ -41,53 +45,90 @@ export class TiniRouter {
     return {url, layoutRoute: layout, pageRoute: page};
   }
 
-  // for router-outlet only
-  private setOutletCallback(callback: (result: MatchResult) => void) {
-    this.outletCallback = callback;
-  }
-
   private registerOutlet() {
-    if (!customElements.get(ROUTER_OUTLET_TAG_NAME)) {
-      customElements.define(ROUTER_OUTLET_TAG_NAME, TiniRouterOutlet);
-    }
+    if (customElements.get(ROUTER_OUTLET_TAG_NAME)) return;
+    customElements.define(ROUTER_OUTLET_TAG_NAME, TiniRouterOutlet);
   }
 
   private registerTriggers() {
     // link trigger
     if (this.options.linkTrigger) {
       addEventListener('click', e => {
+        const {
+          origin: locationOrigin,
+          pathname: locationPathname,
+          href: locationHref,
+        } = window.location;
+        // pre-check
+        if (
+          e.defaultPrevented || // the default action is prevented
+          e.button !== 0 || // not with the primary mouse button
+          // a modifier key is pressed
+          e.shiftKey ||
+          e.ctrlKey ||
+          e.altKey ||
+          e.metaKey
+        )
+          return;
+        // process anchor
         let anchor: null | HTMLAnchorElement = null;
-        const paths = e.composedPath() as HTMLElement[];
+        const paths = (
+          !e.composedPath ? (e as any).path || [] : e.composedPath()
+        ) as HTMLElement[];
         for (let i = 0; i < paths.length; i++) {
-          if (paths[i].tagName === 'A') {
+          if (paths[i]?.tagName?.toLowerCase() === 'a') {
             anchor = paths[i] as HTMLAnchorElement;
             break;
           }
         }
+        // validation
+        const testTarget = anchor?.target?.toLowerCase() || '';
+        const testHref = anchor?.href?.toLowerCase() || '';
         if (
-          anchor &&
-          (!anchor.target || anchor.target.toLowerCase() === '_self')
-        ) {
+          !anchor || // no anchor
+          (testTarget && testTarget !== '_self') || // has target
+          /^javascript\:(void\(0\);?)|;$/.test(testHref) || // js void
+          testHref.startsWith('mailto:') || // mailto protocol
+          testHref.startsWith('tel:') || // tel protocol
+          anchor.hasAttribute('download') || // has download
+          anchor.hasAttribute('router-ignore') || // has router-ignore
+          (anchor.pathname === locationPathname && anchor.hash !== '') || // a fragment on the current page
+          (anchor.origin || this.getAnchorOrigin(anchor)) !== locationOrigin // cross origin
+        )
+          return;
+        // do navigation
+        if (anchor.href !== locationHref) {
           const url = new URL(anchor.href);
-          if (url.href !== location.href) {
-            history.pushState({}, '', url.href);
-            this.onRouteChanges(url);
-          }
-          e.preventDefault();
+          history.pushState({}, '', url.href);
+          this.onRouteChanges(url);
         }
+        e.preventDefault();
+        window.scrollTo(0, 0);
       });
     }
     // popstate trigger
     addEventListener('popstate', e => {
-      this.onRouteChanges(new URL(location.href));
+      this.onRouteChanges(new URL(window.location.href));
       e.preventDefault();
     });
   }
 
   private onRouteChanges(url: URL) {
     const detail = this.match(url);
-    dispatchEvent(new CustomEvent('route', {detail}));
-    if (this.outletCallback) this.outletCallback(detail);
+    if (this.callback) this.callback(detail);
+    return dispatchEvent(new CustomEvent('route', {detail}));
+  }
+
+  private getAnchorOrigin(anchor: HTMLAnchorElement) {
+    const port = anchor.port;
+    const protocol = anchor.protocol;
+    const defaultHttp = protocol === 'http:' && port === '80';
+    const defaultHttps = protocol === 'https:' && port === '443';
+    const host =
+      defaultHttp || defaultHttps
+        ? anchor.hostname // without port
+        : anchor.host; // with port
+    return `${protocol}//${host}`;
   }
 
   private buildFlatRoutes(routes: Route[]) {
