@@ -1,6 +1,6 @@
 {
   "name": "@tinijs/router",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "The router module for the TiniJS framework.",
   "author": "Lam Nhan",
   "homepage": "https://tinijs.dev",
@@ -37,7 +37,7 @@
     "url": "https://github.com/tinijs/core/issues"
   },
   "peerDependencies": {
-    "@tinijs/core": "^0.1.1",
+    "@tinijs/core": "^0.2.0",
     "lit": "^3.0.0-pre.0"
   },
   "devDependencies": {
