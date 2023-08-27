@@ -42,7 +42,8 @@ export default [
 - Register the routes in `app.ts`
 
 ```ts
-import {TiniComponent, App, html} from '@tinijs/core';
+import {html} from 'lit';
+import {TiniComponent, App} from '@tinijs/core';
 import {createRouter} from '@tinijs/router';
 
 import routes from './routes';
