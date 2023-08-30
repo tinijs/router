@@ -13,6 +13,16 @@ export function getRouter(): null | TiniRouter {
   );
 }
 
+export function getCurrentRoute() {
+  const router = getRouter();
+  return router?.getCurrentRoute();
+}
+
+export function getRouteParams() {
+  const currentRoute = getCurrentRoute();
+  return currentRoute?.params;
+}
+
 export function go(to: string) {
   const url = new URL(to, window.location.origin);
   if (url.href !== window.location.href) {

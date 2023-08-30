@@ -30,6 +30,11 @@ export default [
         action: () => import('./pages/home'),
       },
       {
+        path: 'articles/:slug',
+        component: 'app-page-article',
+        action: () => import('./pages/article'),
+      },
+      {
         path: '**',
         component: 'app-page-404',
         action: () => import('./pages/404'),
@@ -55,6 +60,35 @@ export class AppRoot extends TiniComponent {
   protected render() {
     return html`<router-outlet .router=${this.$router}></router-outlet>`;
   }
+}
+```
+
+- Retrieve the routing context
+
+```ts
+import {TiniComponent, Page} from '@tinijs/core';
+import {
+  GetRouter,
+  Router,
+  CurrentRoute,
+  MatchResult,
+  RouteParams
+} from '@tinijs/router';
+
+interface PageParams {
+  slug: string;
+}
+
+@Page()
+export class ArticlePage extends TiniComponent {
+  // router instance
+  @GetRouter() private readonly router!: Router;
+
+  // current route
+  @CurrentRoute() private readonly route!: MatchResult;
+
+  // route params
+  @RouteParams() private readonly params!: PageParams;
 }
 ```
 

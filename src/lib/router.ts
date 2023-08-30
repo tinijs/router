@@ -1,18 +1,23 @@
-import {Route, RouterOptions, MatchResult} from './types';
+import {pathToRegexp, Key} from 'path-to-regexp';
+
+import {Route, RouterOptions, RegistryItem, MatchResult} from './types';
 import {ROUTER_OUTLET_TAG_NAME} from './consts';
 import {go} from './methods';
 import {TiniRouterOutlet} from './router-outlet';
 
 export class TiniRouter {
+  private readonly NOT_FOUND_PATH = '/**';
+  private readonly registry: Record<string, RegistryItem>;
+  private readonly cache = new Map<string, MatchResult>();
   private callback?: (result: MatchResult) => void;
-  private readonly flatRoutes: Record<string, {layout?: Route; page: Route}>;
+
   indicatorSchedule: null | number = null;
 
   constructor(
     public readonly routes: Route[],
     public readonly options: RouterOptions = {}
   ) {
-    this.flatRoutes = this.buildFlatRoutes(routes);
+    this.registry = this.buildRegistry(routes);
   }
 
   go(to: string) {
@@ -30,19 +35,100 @@ export class TiniRouter {
     return this as TiniRouter;
   }
 
+  getCurrentRoute() {
+    return this.match(new URL(window.location.href));
+  }
+
   match(url: URL): MatchResult {
-    // TODO: fix this
-    // FIX ME: this is a very naive implementation
-    const pathSegments = url.pathname.split('/');
-    const fallbackPath =
-      (!pathSegments[1] ? '/' : `/${pathSegments[1]}/`) + '**';
-    const {layout, page} =
-      this.flatRoutes[url.pathname] ||
-      this.flatRoutes[fallbackPath] ||
-      this.flatRoutes['/**'] ||
-      {};
+    const path = url.pathname;
+
+    /*
+     * 1. check cache
+     */
+    const cachedResult = this.cache.get(path);
+    if (cachedResult) return cachedResult;
+
+    /*
+     * 2. check routes
+     */
+    const pathSegments = path.split('/');
+    let matched: undefined | RegistryItem;
+    let matchedRoutePath: undefined | string;
+    let matchedExecResult: null | RegExpExecArray = null;
+
+    // root
+    if (!pathSegments[1] && this.registry['/']) {
+      matched = this.registry['/'];
+    }
+    // exact
+    else if (this.registry[path]) {
+      matched = this.registry[path];
+    }
+    // route
+    else {
+      for (const routePath in this.registry) {
+        const route = this.registry[routePath];
+        const execResult = !route.regexp ? null : route.regexp.exec(path);
+        if (execResult) {
+          matched = route;
+          matchedRoutePath = routePath;
+          matchedExecResult = execResult;
+          break;
+        }
+      }
+    }
+
+    // 404
+    if (!matched) {
+      const notFoundPath =
+        (!pathSegments[1] ? '/' : `/${pathSegments[1]}/`) +
+        this.NOT_FOUND_PATH.replace(/^\//, '');
+      matched =
+        this.registry[notFoundPath] || this.registry[this.NOT_FOUND_PATH];
+    }
+
+    /*
+     * 3. result
+     */
+    const {regexp, keys, params} =
+      !matchedRoutePath || !matchedExecResult
+        ? ({} as ReturnType<TiniRouter['extractParams']>)
+        : this.extractParams(matchedRoutePath, matchedExecResult);
+    const result: MatchResult = {
+      url,
+      path,
+      routePath: matchedRoutePath,
+      regexp,
+      keys,
+      params,
+      layoutRoute: matched?.layout,
+      pageRoute: matched?.page,
+    };
+    if (matched) this.cache.set(path, result);
+    return result;
+  }
+
+  private extractParams(routePath: string, execResult: string[]) {
+    const keys: Key[] = [];
+    const regexp = pathToRegexp(routePath, keys);
+    // extract params
+    const params = {} as Record<string, any>;
+    for (let i = 1; i < execResult.length; i++) {
+      const key = keys[i - 1];
+      const prop = key.name;
+      const value = execResult[i];
+      if (value !== undefined || !Object.hasOwnProperty.call(params, prop)) {
+        if (key.modifier === '+' || key.modifier === '*') {
+          params[prop] = value
+            ? value.split(/[/?#]/).map(item => this.decodeParam(item))
+            : [];
+        } else {
+          params[prop] = value ? this.decodeParam(value) : value;
+        }
+      }
+    }
     // result
-    return {url, layoutRoute: layout, pageRoute: page};
+    return {regexp, keys, params};
   }
 
   private registerOutlet() {
@@ -131,24 +217,42 @@ export class TiniRouter {
     return `${protocol}//${host}`;
   }
 
-  private buildFlatRoutes(routes: Route[]) {
+  private decodeParam(val: string) {
+    try {
+      return decodeURIComponent(val);
+    } catch (err) {
+      return val;
+    }
+  }
+
+  private buildRegistry(routes: Route[]) {
     const processPath = (path: string) => path.replace(/^\/|\/$/g, '');
+    const is404Path = (id: string) =>
+      id.substring(id.length - 3, id.length) === this.NOT_FOUND_PATH;
     return routes.reduce(
       (result, route) => {
         if (!route.children?.length) {
           const id = `/${processPath(route.path)}`;
-          result[id] = {page: route};
+          result[id] = {
+            regexp: is404Path(id) ? undefined : pathToRegexp(id),
+            page: route,
+          };
         } else {
           route.children.forEach(child => {
-            const id =
+            let id =
               (!route.path ? '' : `/${processPath(route.path)}`) +
               (!child.path ? '' : `/${processPath(child.path)}`);
-            result[id || '/'] = {layout: route, page: child};
+            id ||= '/';
+            result[id] = {
+              regexp: is404Path(id) ? undefined : pathToRegexp(id),
+              page: child,
+              layout: route,
+            };
           });
         }
         return result;
       },
-      {} as TiniRouter['flatRoutes']
+      {} as TiniRouter['registry']
     );
   }
 }
