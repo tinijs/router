@@ -1,54 +1,124 @@
 import {LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
 
-import {MatchResult} from './types';
-import {TiniRouter} from './router';
+import {ActivatedRoute, RouteHook, ElemHook} from './types';
+import {Router} from './router';
 
-export class TiniRouterOutlet extends LitElement {
-  @property({type: Object}) declare readonly router?: TiniRouter;
+export class RouterOutletComponent extends LitElement {
+  @property({type: Object}) declare readonly router: Router;
   private currentLayout?: string;
   private currentPage?: string;
 
   connectedCallback() {
     super.connectedCallback();
-    if (!this.router) throw new Error('Missing the TiniRouter instance.');
+    if (!this.router) throw new Error('Missing the Router instance.');
     this.router.setCallback(this.handleRoute.bind(this));
     this.handleRoute(this.router.match(new URL(window.location.href)));
   }
 
-  private async handleRoute({layoutRoute, pageRoute}: MatchResult) {
+  private async handleRoute(activeRoute: ActivatedRoute) {
+    const {layoutRoute, pageRoute} = activeRoute;
+    // lazy load
     if (layoutRoute?.action) await layoutRoute.action();
     if (pageRoute?.action) await pageRoute.action();
-    const layout = layoutRoute?.component;
-    const page = pageRoute?.component;
-    return layout === this.currentLayout && page === this.currentPage
-      ? false
-      : layout === this.currentLayout
-      ? this.renderPage(page)
-      : this.renderFull(page, layout);
+    // render
+    const layoutTagName = layoutRoute?.component;
+    const pageTagName = pageRoute?.component;
+    if (
+      layoutTagName === this.currentLayout &&
+      pageTagName === this.currentPage
+    )
+      return;
+    if (layoutTagName === this.currentLayout)
+      return this.renderPage(activeRoute, pageTagName);
+    return this.renderFull(activeRoute, pageTagName, layoutTagName);
   }
 
-  private renderPage(page?: string) {
-    this.currentPage = page;
-    const containerEl = !this.currentLayout
+  private async renderPage(activeRoute: ActivatedRoute, pageTagName?: string) {
+    this.currentPage = pageTagName;
+    const rootEl = !this.currentLayout
       ? this.renderRoot
-      : this.renderRoot.querySelector(this.currentLayout);
-    if (!containerEl) return;
-    if (!this.currentPage) return (containerEl.innerHTML = '');
-    const pageEl = document.createElement(this.currentPage);
-    return (containerEl.innerHTML = pageEl.outerHTML);
+      : this.renderRoot.querySelector(this.currentLayout) || this.renderRoot;
+    if (!pageTagName || !rootEl) return;
+    return this.renderer(activeRoute, rootEl, pageTagName);
   }
 
-  protected renderFull(page?: string, layout?: string) {
-    this.currentLayout = layout;
-    this.currentPage = page;
-    if (!this.currentPage) return (this.renderRoot.innerHTML = '');
-    const pageEl = document.createElement(this.currentPage);
-    if (this.currentLayout) {
-      const layoutEl = document.createElement(this.currentLayout);
-      layoutEl.appendChild(pageEl);
-      return (this.renderRoot.innerHTML = layoutEl.outerHTML);
+  private async renderFull(
+    activeRoute: ActivatedRoute,
+    pageTagName?: string,
+    layoutTagName?: string
+  ) {
+    this.currentLayout = layoutTagName;
+    this.currentPage = pageTagName;
+    let rootEl = this.renderRoot;
+    if (!pageTagName || !rootEl) return;
+    // layout
+    if (layoutTagName) {
+      const layoutEl = await this.renderer(activeRoute, rootEl, layoutTagName);
+      if (layoutEl) rootEl = layoutEl;
     }
-    return (this.renderRoot.innerHTML = pageEl.outerHTML);
+    // page
+    return this.renderer(activeRoute, rootEl, pageTagName);
+  }
+
+  private async renderer(
+    activeRoute: ActivatedRoute,
+    rootEl: Element | ShadowRoot,
+    newTagName: string
+  ) {
+    const currentEl = rootEl.firstElementChild as null | HTMLElement;
+    const newEl = document.createElement(newTagName);
+    // hooks
+    const currentBeforeLeave = (currentEl as any)?.onBeforeLeave as ElemHook;
+    const currentAfterLeave = (currentEl as any)?.onAfterLeave as ElemHook;
+    const newBeforeEnter = (newEl as any)?.onBeforeEnter as ElemHook;
+    const newAfterEnter = (newEl as any)?.onAfterEnter as ElemHook;
+    // stage 1
+    if (
+      await this.runBeforeHook(
+        currentBeforeLeave,
+        activeRoute,
+        newEl,
+        currentEl
+      )
+    )
+      return;
+    if (await this.runBeforeHook(newBeforeEnter, activeRoute, newEl, currentEl))
+      return;
+    // main action
+    rootEl.replaceChildren(newEl);
+    // stage 2
+    await this.runAfterHook(newAfterEnter, activeRoute, newEl, currentEl);
+    await this.runAfterHook(currentAfterLeave, activeRoute, newEl, currentEl);
+    // continue
+    return newEl;
+  }
+
+  private async runBeforeHook(
+    hook: undefined | RouteHook,
+    activeRoute: ActivatedRoute,
+    newEl: HTMLElement,
+    currentEl: null | HTMLElement
+  ) {
+    const hookCommand = !hook
+      ? undefined
+      : await hook(this.router, activeRoute, newEl, currentEl);
+    if (!hookCommand) return false;
+    if (typeof hookCommand === 'string') {
+      this.router.redirect(hookCommand);
+    } else {
+      hookCommand();
+    }
+    return true;
+  }
+
+  private async runAfterHook(
+    hook: undefined | RouteHook,
+    activeRoute: ActivatedRoute,
+    newEl: HTMLElement,
+    currentEl: null | HTMLElement
+  ) {
+    if (hook) await hook(this.router, activeRoute, newEl, currentEl);
+    return false;
   }
 }

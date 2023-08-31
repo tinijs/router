@@ -1,5 +1,7 @@
 import {Key} from 'path-to-regexp';
 
+import {Router} from './router';
+
 export interface Route {
   title?: string;
   path: string;
@@ -29,7 +31,43 @@ export interface MatchResult {
   layoutRoute?: Route;
 }
 
+export type ActivatedRoute = MatchResult;
+
 export interface NavIndicatorComponent extends HTMLElement {
   show?(): void;
   hide?(): void;
+}
+
+export type RouteCommand = () => void;
+
+export type RouteHookResult =
+  | void
+  | null
+  | string
+  | RouteCommand
+  | Promise<void | null | string | RouteCommand>;
+
+export type RouteHook = (
+  router: Router,
+  activeRoute: MatchResult,
+  newEl: HTMLElement,
+  currentEl: null | HTMLElement
+) => RouteHookResult;
+
+export type ElemHook = undefined | RouteHook;
+
+export interface OnBeforeLeave {
+  onBeforeLeave: RouteHook;
+}
+
+export interface OnBeforeEnter {
+  onBeforeEnter: RouteHook;
+}
+
+export interface OnAfterEnter {
+  onAfterEnter: RouteHook;
+}
+
+export interface OnAfterLeave {
+  onAfterLeave: RouteHook;
 }

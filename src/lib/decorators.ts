@@ -1,9 +1,4 @@
-import {
-  getRouter,
-  getCurrentRoute,
-  getRouteParams,
-  getNavIndicator,
-} from './methods';
+import {getRouter, getActiveRoute, getParams, getNavIndicator} from './methods';
 
 export function GetRouter() {
   return function (target: Object, propertyKey: string) {
@@ -15,10 +10,10 @@ export function GetRouter() {
   };
 }
 
-export function CurrentRoute() {
+export function ActiveRoute() {
   return function (target: Object, propertyKey: string) {
     Reflect.defineProperty(target, propertyKey, {
-      get: () => getCurrentRoute(),
+      get: () => getActiveRoute(),
       enumerable: false,
       configurable: false,
     });
@@ -28,7 +23,7 @@ export function CurrentRoute() {
 export function RouteParams() {
   return function (target: Object, propertyKey: string) {
     Reflect.defineProperty(target, propertyKey, {
-      get: () => getRouteParams(),
+      get: () => getParams(),
       enumerable: false,
       configurable: false,
     });

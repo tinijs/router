@@ -1,11 +1,17 @@
 import {pathToRegexp, Key} from 'path-to-regexp';
 
-import {Route, RouterOptions, RegistryItem, MatchResult} from './types';
-import {ROUTER_OUTLET_TAG_NAME} from './consts';
-import {go} from './methods';
-import {TiniRouterOutlet} from './router-outlet';
+import {
+  Route,
+  RouterOptions,
+  RegistryItem,
+  MatchResult,
+  ActivatedRoute,
+} from './types';
+import {MODULE_ID, ROUTER_OUTLET_TAG_NAME, CHANGE_EVENT_NAME} from './consts';
+import {go, redirect, back, forward, requestChange} from './methods';
+import {RouterOutletComponent} from './router-outlet';
 
-export class TiniRouter {
+export class Router {
   private readonly NOT_FOUND_PATH = '/**';
   private readonly registry: Record<string, RegistryItem>;
   private readonly cache = new Map<string, MatchResult>();
@@ -20,23 +26,52 @@ export class TiniRouter {
     this.registry = this.buildRegistry(routes);
   }
 
-  go(to: string) {
-    return go(to);
-  }
-
   init() {
     this.registerOutlet();
     this.registerTriggers();
-    return this as TiniRouter;
+    return this as Router;
   }
 
   setCallback(cb: (result: MatchResult) => void) {
     this.callback = cb;
-    return this as TiniRouter;
+    return this as Router;
   }
 
-  getCurrentRoute() {
+  setState(key: string, state: string) {
+    window.sessionStorage.setItem(`${MODULE_ID}:state-${key}`, state);
+    return this as Router;
+  }
+
+  getState(key: string) {
+    return window.sessionStorage.getItem(`${MODULE_ID}:state-${key}`);
+  }
+
+  go(to: string, replace?: boolean) {
+    return go(to, replace);
+  }
+
+  redirect(to: string) {
+    return redirect(to);
+  }
+
+  back() {
+    return back();
+  }
+
+  forward() {
+    return forward();
+  }
+
+  requestChange() {
+    return requestChange();
+  }
+
+  getActiveRoute(): ActivatedRoute {
     return this.match(new URL(window.location.href));
+  }
+
+  getParams() {
+    return this.getActiveRoute()?.params;
   }
 
   match(url: URL): MatchResult {
@@ -92,7 +127,7 @@ export class TiniRouter {
      */
     const {regexp, keys, params} =
       !matchedRoutePath || !matchedExecResult
-        ? ({} as ReturnType<TiniRouter['extractParams']>)
+        ? ({} as ReturnType<Router['extractParams']>)
         : this.extractParams(matchedRoutePath, matchedExecResult);
     const result: MatchResult = {
       url,
@@ -133,13 +168,13 @@ export class TiniRouter {
 
   private registerOutlet() {
     if (customElements.get(ROUTER_OUTLET_TAG_NAME)) return;
-    customElements.define(ROUTER_OUTLET_TAG_NAME, TiniRouterOutlet);
+    customElements.define(ROUTER_OUTLET_TAG_NAME, RouterOutletComponent);
   }
 
   private registerTriggers() {
     // link trigger
     if (this.options.linkTrigger) {
-      addEventListener('click', e => {
+      window.addEventListener('click', e => {
         const {
           origin: locationOrigin,
           pathname: locationPathname,
@@ -193,7 +228,7 @@ export class TiniRouter {
       });
     }
     // popstate trigger
-    addEventListener('popstate', e => {
+    window.addEventListener('popstate', e => {
       this.onRouteChanges(new URL(window.location.href));
       e.preventDefault();
     });
@@ -202,7 +237,7 @@ export class TiniRouter {
   private onRouteChanges(url: URL) {
     const detail = this.match(url);
     if (this.callback) this.callback(detail);
-    return dispatchEvent(new CustomEvent('route', {detail}));
+    return window.dispatchEvent(new CustomEvent(CHANGE_EVENT_NAME, {detail}));
   }
 
   private getAnchorOrigin(anchor: HTMLAnchorElement) {
@@ -252,7 +287,7 @@ export class TiniRouter {
         }
         return result;
       },
-      {} as TiniRouter['registry']
+      {} as Router['registry']
     );
   }
 }

@@ -8,10 +8,10 @@ import {
 } from '@tinijs/core';
 import {Route, RouterOptions} from './types';
 import {hideNavIndicator, showNavIndicator} from './methods';
-import {TiniRouter} from './router';
+import {Router} from './router';
 
 export function createRouter(routes: Route[], options: RouterOptions = {}) {
-  const router = new TiniRouter(routes, options).init();
+  const router = new Router(routes, options).init();
   // handle nav indicator
   if ((GLOBAL as Global).$tiniAppOptions?.navIndicator) {
     router.indicatorSchedule = null;

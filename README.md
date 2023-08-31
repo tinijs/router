@@ -70,8 +70,8 @@ import {TiniComponent, Page} from '@tinijs/core';
 import {
   GetRouter,
   Router,
-  CurrentRoute,
-  MatchResult,
+  ActiveRoute,
+  ActivatedRoute,
   RouteParams
 } from '@tinijs/router';
 
@@ -79,16 +79,50 @@ interface PageParams {
   slug: string;
 }
 
-@Page()
+@Page({
+  name: 'page-article',
+})
 export class ArticlePage extends TiniComponent {
   // router instance
   @GetRouter() private readonly router!: Router;
 
   // current route
-  @CurrentRoute() private readonly route!: MatchResult;
+  @ActiveRoute() private readonly route!: ActivatedRoute;
 
   // route params
   @RouteParams() private readonly params!: PageParams;
+}
+```
+
+## Lifecycle Hooks & Guards
+
+Lifecycle hooks are used to perform actions when a route is activated or deactivated:
+
+- `onBeforeEnter`: called when the route is about to be activated
+- `onAfterEnter`: called when the route is activated
+- `onBeforeLeave`: called when the route is about to be deactivated
+- `onAfterLeave`: called when the route is deactivated
+
+You can intercept the navigation process by returning a `string` or a `function` from the `onBeforeEnter` and `onBeforeLeave` hook:
+
+- `nullish`: continue the navigation process
+- `string`: cancel and redirect to the path
+- `function`: cancel and execute the function
+
+```ts
+import {TiniComponent, Page} from '@tinijs/core';
+import {OnBeforeEnter} from '@tinijs/router';
+
+@Page({
+  name: 'page-user',
+})
+export class UserPage extends TiniComponent implements OnBeforeEnter {
+
+  onBeforeEnter() {
+    if (user) return; // continue
+    return '/login'; // redirect to login page
+  }
+
 }
 ```
 

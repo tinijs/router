@@ -1,10 +1,10 @@
 import {getAppInstance, TiniApp, Global} from '@tinijs/core';
 
-import {NavIndicatorComponent} from './types';
+import {NavIndicatorComponent, ActivatedRoute} from './types';
 import {NAV_INDICATOR_ID, NAV_INDICATOR, CLASS_ACTIVE} from './consts';
-import {TiniRouter} from './router';
+import {Router} from './router';
 
-export function getRouter(): null | TiniRouter {
+export function getRouter(): null | Router {
   const appOrGlobal = getAppInstance(true);
   return (
     (appOrGlobal as TiniApp).$router ||
@@ -13,22 +13,37 @@ export function getRouter(): null | TiniRouter {
   );
 }
 
-export function getCurrentRoute() {
-  const router = getRouter();
-  return router?.getCurrentRoute();
+export function getActiveRoute(): ActivatedRoute | undefined {
+  return getRouter()?.getActiveRoute();
 }
 
-export function getRouteParams() {
-  const currentRoute = getCurrentRoute();
-  return currentRoute?.params;
+export function getParams() {
+  return getRouter()?.getParams();
 }
 
-export function go(to: string) {
+export function requestChange() {
+  return window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
+export function go(to: string, replace?: boolean) {
   const url = new URL(to, window.location.origin);
-  if (url.href !== window.location.href) {
-    history.pushState({}, '', url.href);
-    dispatchEvent(new PopStateEvent('popstate'));
-  }
+  if (url.href === window.location.href) return;
+  window.history[!replace ? 'pushState' : 'replaceState']({}, '', url.href);
+  return requestChange();
+}
+
+export function redirect(to: string) {
+  return go(to, true);
+}
+
+export function back() {
+  window.history.back();
+  return requestChange();
+}
+
+export function forward() {
+  window.history.forward();
+  return requestChange();
 }
 
 export function getNavIndicator() {
