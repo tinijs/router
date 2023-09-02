@@ -7,3 +7,6 @@ export const ROUTER_OUTLET_TAG_NAME = 'router-outlet';
 export const NAV_INDICATOR_ID = 'nav-indicator';
 export const NAV_INDICATOR = `app-${NAV_INDICATOR_ID}`;
 export const CLASS_ACTIVE = 'active';
+
+export const NO_ROUTER_ERROR = 'Router is not initialized.';
+export const NO_OUTLET_ROUTER_ERROR = 'Router instance is not provided.';

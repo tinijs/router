@@ -1,24 +1,26 @@
-import {getAppInstance, TiniApp, Global} from '@tinijs/core';
+import {getAppInstance, TiniApp} from '@tinijs/core';
 
 import {NavIndicatorComponent, ActivatedRoute} from './types';
-import {NAV_INDICATOR_ID, NAV_INDICATOR, CLASS_ACTIVE} from './consts';
+import {
+  NAV_INDICATOR_ID,
+  NAV_INDICATOR,
+  CLASS_ACTIVE,
+  NO_ROUTER_ERROR,
+} from './consts';
 import {Router} from './router';
 
-export function getRouter(): null | Router {
-  const appOrGlobal = getAppInstance(true);
-  return (
-    (appOrGlobal as TiniApp).$router ||
-    (appOrGlobal as Global).$tiniRouter ||
-    null
-  );
+export function getRouter() {
+  const router = getAppInstance().router as undefined | Router;
+  if (!router) throw new Error(NO_ROUTER_ERROR);
+  return router;
 }
 
 export function getActiveRoute(): ActivatedRoute | undefined {
-  return getRouter()?.getActiveRoute();
+  return getRouter().getActiveRoute();
 }
 
 export function getParams() {
-  return getRouter()?.getParams();
+  return getRouter().getParams();
 }
 
 export function requestChange() {

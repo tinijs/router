@@ -55,10 +55,10 @@ import routes from './routes';
 
 @App()
 export class AppRoot extends TiniComponent {
-  public readonly $router = createRouter(routes, {linkTrigger: true});
+  public readonly router = createRouter(routes, {linkTrigger: true});
 
   protected render() {
-    return html`<router-outlet .router=${this.$router}></router-outlet>`;
+    return html`<router-outlet .router=${this.router}></router-outlet>`;
   }
 }
 ```

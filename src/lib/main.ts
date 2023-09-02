@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   GLOBAL,
-  Global,
   ComponentTypes,
   LifecycleHooks,
   registerGlobalHook,
@@ -13,7 +12,7 @@ import {Router} from './router';
 export function createRouter(routes: Route[], options: RouterOptions = {}) {
   const router = new Router(routes, options).init();
   // handle nav indicator
-  if ((GLOBAL as Global).$tiniAppOptions?.navIndicator) {
+  if (GLOBAL.app?.options?.navIndicator) {
     router.indicatorSchedule = null;
     // exit
     registerGlobalHook(
@@ -31,7 +30,10 @@ export function createRouter(routes: Route[], options: RouterOptions = {}) {
     window.addEventListener('route', e => {
       const {url} = (e as CustomEvent).detail;
       if (url.pathname === window.location.pathname) return;
-      router.indicatorSchedule = setTimeout(() => showNavIndicator(), 500);
+      router.indicatorSchedule = setTimeout(
+        () => showNavIndicator(),
+        500
+      ) as unknown as number;
     });
   }
   // result
