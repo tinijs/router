@@ -64,7 +64,7 @@ export class RouterOutletComponent extends LitElement {
 
   private async renderer(
     activeRoute: ActivatedRoute,
-    rootEl: Element | ShadowRoot,
+    rootEl: Element | DocumentFragment,
     newTagName: string
   ) {
     const currentEl = rootEl.firstElementChild as null | HTMLElement;

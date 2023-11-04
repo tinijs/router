@@ -208,7 +208,7 @@ export class Router {
         if (
           !anchor || // no anchor
           (testTarget && testTarget !== '_self') || // has target
-          /^javascript\:(void\(0\);?)|;$/.test(testHref) || // js void
+          /^javascript:(void\(0\);?)|;$/.test(testHref) || // js void
           testHref.startsWith('mailto:') || // mailto protocol
           testHref.startsWith('tel:') || // tel protocol
           anchor.hasAttribute('download') || // has download
