@@ -38,14 +38,14 @@
   },
   "peerDependencies": {
     "@tinijs/core": "^0.11.0",
-    "lit": "^3.0.2"
+    "lit": "^3.1.0"
   },
   "dependencies": {
     "path-to-regexp": "^6.2.1"
   },
   "devDependencies": {
-    "@types/node": "^20.8.10",
+    "@types/node": "^20.9.4",
     "gts": "^5.2.0",
-    "typescript": "~5.2.2"
+    "typescript": "~5.3.2"
   }
 }
