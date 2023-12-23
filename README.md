@@ -133,7 +133,7 @@ export class UserPage extends TiniComponent implements OnBeforeEnter {
 ## Developement
 
 - Create a home for TiniJS: `mkdir TiniJS && cd TiniJS`
-- Fork the repo: `git clone https://github.com/tinijs/router.git`
+- Fork the repo
 - Install dependencies: `cd router && npm i`
 - Make changes & preview locally: `npm run build && npm pack`
 - Push changes & create a PR 👌
