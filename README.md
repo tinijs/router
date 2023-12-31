@@ -49,13 +49,13 @@ export default [
 ```ts
 import {html} from 'lit';
 import {TiniComponent, App} from '@tinijs/core';
-import {createRouter} from '@tinijs/router';
+import {createRouter, AppWithRouter} from '@tinijs/router';
 
 import routes from './routes';
 
 @App()
-export class AppRoot extends TiniComponent {
-  public readonly router = createRouter(routes, {linkTrigger: true});
+export class AppRoot extends TiniComponent implements AppWithRouter {
+  readonly router = createRouter(routes, {linkTrigger: true});
 
   protected render() {
     return html`<router-outlet .router=${this.router}></router-outlet>`;
@@ -68,11 +68,11 @@ export class AppRoot extends TiniComponent {
 ```ts
 import {TiniComponent, Page} from '@tinijs/core';
 import {
-  GetRouter,
   Router,
-  ActiveRoute,
   ActivatedRoute,
-  RouteParams
+  UseRouter,
+  UseRoute,
+  UseParams
 } from '@tinijs/router';
 
 interface PageParams {
@@ -84,13 +84,13 @@ interface PageParams {
 })
 export class ArticlePage extends TiniComponent {
   // router instance
-  @GetRouter() private readonly router!: Router;
+  @UseRouter() router!: Router;
 
   // current route
-  @ActiveRoute() private readonly route!: ActivatedRoute;
+  @UseRoute() route!: ActivatedRoute;
 
   // route params
-  @RouteParams() private readonly params!: PageParams;
+  @UseParams() params!: PageParams;
 }
 ```
 

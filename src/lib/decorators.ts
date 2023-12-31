@@ -1,41 +1,33 @@
 import {getRouter, getActiveRoute, getParams, getNavIndicator} from './methods';
 
-export function GetRouter() {
-  return function (target: Object, propertyKey: string) {
-    Reflect.defineProperty(target, propertyKey, {
+export function UseRouter() {
+  return function (prototype: any, propertyName: string) {
+    Object.defineProperty(prototype, propertyName, {
       get: () => getRouter(),
-      enumerable: false,
-      configurable: false,
     });
   };
 }
 
-export function ActiveRoute() {
-  return function (target: Object, propertyKey: string) {
-    Reflect.defineProperty(target, propertyKey, {
+export function UseRoute() {
+  return function (prototype: any, propertyName: string) {
+    Object.defineProperty(prototype, propertyName, {
       get: () => getActiveRoute(),
-      enumerable: false,
-      configurable: false,
     });
   };
 }
 
-export function RouteParams() {
-  return function (target: Object, propertyKey: string) {
-    Reflect.defineProperty(target, propertyKey, {
+export function UseParams() {
+  return function (prototype: any, propertyName: string) {
+    Object.defineProperty(prototype, propertyName, {
       get: () => getParams(),
-      enumerable: false,
-      configurable: false,
     });
   };
 }
 
-export function GetNavIndicator() {
-  return function (target: Object, propertyKey: string) {
-    Reflect.defineProperty(target, propertyKey, {
+export function UseNavIndicator() {
+  return function (prototype: any, propertyName: string) {
+    Object.defineProperty(prototype, propertyName, {
       get: () => getNavIndicator(),
-      enumerable: false,
-      configurable: false,
     });
   };
 }

@@ -56,6 +56,10 @@ export type RouteHook = (
 
 export type ElemHook = undefined | RouteHook;
 
+export interface AppWithRouter {
+  router: Router;
+}
+
 export interface OnBeforeLeave {
   onBeforeLeave: RouteHook;
 }

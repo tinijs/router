@@ -7,7 +7,7 @@ import {
   MatchResult,
   ActivatedRoute,
 } from './types';
-import {MODULE_ID, ROUTER_OUTLET_TAG_NAME, CHANGE_EVENT_NAME} from './consts';
+import {MODULE_ID, ROUTER_OUTLET_TAG_NAME, ROUTE_CHANGE_EVENT} from './consts';
 import {go, redirect, back, forward, requestChange} from './methods';
 import {RouterOutletComponent} from './router-outlet';
 
@@ -38,12 +38,12 @@ export class Router {
   }
 
   setState(key: string, state: string) {
-    window.sessionStorage.setItem(`${MODULE_ID}:state-${key}`, state);
+    sessionStorage.setItem(`${MODULE_ID}:state-${key}`, state);
     return this as Router;
   }
 
   getState(key: string) {
-    return window.sessionStorage.getItem(`${MODULE_ID}:state-${key}`);
+    return sessionStorage.getItem(`${MODULE_ID}:state-${key}`);
   }
 
   go(to: string, replace?: boolean) {
@@ -67,7 +67,7 @@ export class Router {
   }
 
   getActiveRoute(): ActivatedRoute {
-    return this.match(new URL(window.location.href));
+    return this.match(new URL(location.href));
   }
 
   getParams() {
@@ -174,12 +174,12 @@ export class Router {
   private registerTriggers() {
     // link trigger
     if (this.options.linkTrigger) {
-      window.addEventListener('click', e => {
+      addEventListener('click', e => {
         const {
           origin: locationOrigin,
           pathname: locationPathname,
           href: locationHref,
-        } = window.location;
+        } = location;
         // pre-check
         if (
           e.defaultPrevented || // the default action is prevented
@@ -224,12 +224,12 @@ export class Router {
           this.onRouteChanges(url);
         }
         e.preventDefault();
-        window.scrollTo(0, 0);
+        scrollTo(0, 0);
       });
     }
     // popstate trigger
-    window.addEventListener('popstate', e => {
-      this.onRouteChanges(new URL(window.location.href));
+    addEventListener('popstate', e => {
+      this.onRouteChanges(new URL(location.href));
       e.preventDefault();
     });
   }
@@ -237,7 +237,7 @@ export class Router {
   private onRouteChanges(url: URL) {
     const detail = this.match(url);
     if (this.callback) this.callback(detail);
-    return window.dispatchEvent(new CustomEvent(CHANGE_EVENT_NAME, {detail}));
+    return dispatchEvent(new CustomEvent(ROUTE_CHANGE_EVENT, {detail}));
   }
 
   private getAnchorOrigin(anchor: HTMLAnchorElement) {

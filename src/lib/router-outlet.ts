@@ -14,7 +14,7 @@ export class RouterOutletComponent extends LitElement {
     super.connectedCallback();
     if (!this.router) throw new Error(NO_OUTLET_ROUTER_ERROR);
     this.router.setCallback(this.handleRoute.bind(this));
-    this.handleRoute(this.router.match(new URL(window.location.href)));
+    this.handleRoute(this.router.match(new URL(location.href)));
   }
 
   private async handleRoute(activeRoute: ActivatedRoute) {
