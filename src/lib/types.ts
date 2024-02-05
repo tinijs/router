@@ -27,6 +27,8 @@ export interface MatchResult {
   regexp?: RegExp;
   keys?: Key[];
   params?: Record<string, any>;
+  query?: Record<string, any>;
+  fragment?: string;
   pageRoute?: Route;
   layoutRoute?: Route;
 }

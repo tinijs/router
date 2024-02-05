@@ -21,6 +21,14 @@ export function getParams() {
   return getRouter().getParams();
 }
 
+export function getQuery() {
+  return getRouter().getQuery();
+}
+
+export function getFragment() {
+  return getRouter().getFragment();
+}
+
 export function requestChange() {
   return dispatchEvent(new PopStateEvent('popstate'));
 }

@@ -103,7 +103,7 @@ export class RouterOutletComponent extends LitElement {
   ) {
     const hookCommand = !hook
       ? undefined
-      : await hook(this.router, activeRoute, newEl, currentEl);
+      : await hook.call(newEl, this.router, activeRoute, newEl, currentEl);
     if (!hookCommand) return false;
     if (typeof hookCommand === 'string') {
       this.router.redirect(hookCommand);
@@ -119,7 +119,8 @@ export class RouterOutletComponent extends LitElement {
     newEl: HTMLElement,
     currentEl: null | HTMLElement
   ) {
-    if (hook) await hook(this.router, activeRoute, newEl, currentEl);
+    if (hook)
+      await hook.call(newEl, this.router, activeRoute, newEl, currentEl);
     return false;
   }
 }

@@ -1,4 +1,11 @@
-import {getRouter, getActiveRoute, getParams, getNavIndicator} from './methods';
+import {
+  getRouter,
+  getActiveRoute,
+  getParams,
+  getQuery,
+  getFragment,
+  getNavIndicator,
+} from './methods';
 
 export function UseRouter() {
   return function (prototype: any, propertyName: string) {
@@ -20,6 +27,22 @@ export function UseParams() {
   return function (prototype: any, propertyName: string) {
     Object.defineProperty(prototype, propertyName, {
       get: () => getParams(),
+    });
+  };
+}
+
+export function UseQuery() {
+  return function (prototype: any, propertyName: string) {
+    Object.defineProperty(prototype, propertyName, {
+      get: () => getQuery(),
+    });
+  };
+}
+
+export function UseFragment() {
+  return function (prototype: any, propertyName: string) {
+    Object.defineProperty(prototype, propertyName, {
+      get: () => getFragment(),
     });
   };
 }

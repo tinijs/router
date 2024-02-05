@@ -71,7 +71,15 @@ export class Router {
   }
 
   getParams() {
-    return this.getActiveRoute()?.params;
+    return this.getActiveRoute()?.params || {};
+  }
+
+  getQuery() {
+    return this.getActiveRoute()?.query || {};
+  }
+
+  getFragment() {
+    return this.getActiveRoute()?.fragment || '';
   }
 
   match(url: URL): MatchResult {
@@ -125,10 +133,29 @@ export class Router {
     /*
      * 3. result
      */
-    const {regexp, keys, params} =
-      !matchedRoutePath || !matchedExecResult
-        ? ({} as ReturnType<Router['extractParams']>)
-        : this.extractParams(matchedRoutePath, matchedExecResult);
+    const {
+      regexp,
+      keys,
+      params = {},
+    } = !matchedRoutePath || !matchedExecResult
+      ? ({} as ReturnType<Router['extractParams']>)
+      : this.extractParams(matchedRoutePath, matchedExecResult);
+    const query = {} as Record<string, any>;
+    url.searchParams.forEach((value, key) => {
+      if (!/\[\]$/.test(key)) {
+        query[key] = value;
+      } else {
+        key = key.slice(0, -2);
+        if (!query[key]) {
+          query[key] = [value];
+        } else {
+          query[key] = Array.isArray(query[key])
+            ? query[key].concat(value)
+            : [query[key], value];
+        }
+      }
+    });
+    const fragment = url.hash.replace(/^#/, '');
     const result: MatchResult = {
       url,
       path,
@@ -136,6 +163,8 @@ export class Router {
       regexp,
       keys,
       params,
+      query,
+      fragment,
       layoutRoute: matched?.layout,
       pageRoute: matched?.page,
     };
