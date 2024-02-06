@@ -35,7 +35,7 @@ export function requestChange() {
 
 export function go(to: string, replace?: boolean) {
   const url = new URL(to, location.origin);
-  if (url.href === location.href) return;
+  if (url.href === location.href) return false;
   history[!replace ? 'pushState' : 'replaceState']({}, '', url.href);
   return requestChange();
 }
