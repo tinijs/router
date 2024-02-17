@@ -10,6 +10,25 @@ export interface Route {
   children?: Omit<Route, 'children'>[];
 }
 
+export interface FragmentManager {
+  url: URL;
+  container: HTMLElement;
+  items: Record<string, HTMLElement>;
+  options?: FragmentActivationOptions;
+}
+
+export interface FragmentActivationOptions extends ScrollIntoViewOptions {
+  delay?: number;
+  action?: (element: HTMLElement) => void;
+}
+
+export interface FragmentItem {
+  id: string;
+  title: string;
+  level: number;
+  element: HTMLElement;
+}
+
 export interface RegistryItem {
   page: Route;
   layout?: Route;
@@ -27,6 +46,8 @@ export interface MatchResult {
   regexp?: RegExp;
   keys?: Key[];
   params?: Record<string, any>;
+  query?: Record<string, any>;
+  fragment?: string;
   pageRoute?: Route;
   layoutRoute?: Route;
 }

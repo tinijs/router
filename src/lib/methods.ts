@@ -21,13 +21,21 @@ export function getParams() {
   return getRouter().getParams();
 }
 
+export function getQuery() {
+  return getRouter().getQuery();
+}
+
+export function getFragment() {
+  return getRouter().getFragment();
+}
+
 export function requestChange() {
   return dispatchEvent(new PopStateEvent('popstate'));
 }
 
 export function go(to: string, replace?: boolean) {
   const url = new URL(to, location.origin);
-  if (url.href === location.href) return;
+  if (url.href === location.href) return false;
   history[!replace ? 'pushState' : 'replaceState']({}, '', url.href);
   return requestChange();
 }

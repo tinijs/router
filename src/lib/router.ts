@@ -3,6 +3,9 @@ import {pathToRegexp, Key} from 'path-to-regexp';
 import {
   Route,
   RouterOptions,
+  FragmentManager,
+  FragmentActivationOptions,
+  FragmentItem,
   RegistryItem,
   MatchResult,
   ActivatedRoute,
@@ -17,7 +20,8 @@ export class Router {
   private readonly cache = new Map<string, MatchResult>();
   private callback?: (result: MatchResult) => void;
 
-  indicatorSchedule: null | number = null;
+  indicatorSchedule: number | null = null;
+  fragmentManager: FragmentManager | null = null;
 
   constructor(
     public readonly routes: Route[],
@@ -37,6 +41,60 @@ export class Router {
     return this as Router;
   }
 
+  renewFragments(
+    container: HTMLElement,
+    activation?: false | FragmentActivationOptions
+  ) {
+    const url = new URL(location.href);
+    this.fragmentManager = {
+      url,
+      container,
+      items: Array.from(container.querySelectorAll('[id]')).reduce(
+        (result, element) => {
+          if (element instanceof HTMLElement && element.id) {
+            result[element.id] = element;
+          }
+          return result;
+        },
+        {} as Record<string, HTMLElement>
+      ),
+      options: activation === false ? undefined : activation,
+    } as FragmentManager;
+    if (activation !== false) {
+      setTimeout(
+        () => this.goFragment(url.hash.replace(/^#/, '')),
+        activation?.delay || 0
+      );
+    }
+    return this as Router;
+  }
+
+  retrieveFragments(
+    symbolOrExtractor?: string | ((element: HTMLElement) => string)
+  ) {
+    return Object.entries(this.fragmentManager?.items || {})
+      .map(([id, element]) => {
+        let title = '';
+        if (symbolOrExtractor instanceof Function) {
+          title = symbolOrExtractor(element);
+        } else {
+          title = element?.textContent || '';
+          const symbol = symbolOrExtractor || '#';
+          if (title.slice(-symbol.length) === symbol) {
+            title = title.slice(0, -symbol.length).trim();
+          }
+        }
+        const level = Number(element.tagName.replace(/^H/i, ''));
+        return {
+          id,
+          title,
+          level: isNaN(level) ? 0 : level,
+          element,
+        } as FragmentItem;
+      })
+      .filter(item => !!item.title);
+  }
+
   setState(key: string, state: string) {
     sessionStorage.setItem(`${MODULE_ID}:state-${key}`, state);
     return this as Router;
@@ -48,6 +106,21 @@ export class Router {
 
   go(to: string, replace?: boolean) {
     return go(to, replace);
+  }
+
+  goFragment(to: string, options?: Omit<FragmentActivationOptions, 'delay'>) {
+    const {items, options: currentOptions} = this.fragmentManager || {};
+    const element = items?.[to];
+    if (!element) return false;
+    const {
+      action,
+      behavior = 'smooth',
+      block,
+      inline,
+    } = options || currentOptions || {};
+    element.scrollIntoView({behavior, block, inline});
+    action?.(element);
+    return true;
   }
 
   redirect(to: string) {
@@ -71,7 +144,15 @@ export class Router {
   }
 
   getParams() {
-    return this.getActiveRoute()?.params;
+    return this.getActiveRoute()?.params || {};
+  }
+
+  getQuery() {
+    return this.getActiveRoute()?.query || {};
+  }
+
+  getFragment() {
+    return this.getActiveRoute()?.fragment || '';
   }
 
   match(url: URL): MatchResult {
@@ -125,10 +206,29 @@ export class Router {
     /*
      * 3. result
      */
-    const {regexp, keys, params} =
-      !matchedRoutePath || !matchedExecResult
-        ? ({} as ReturnType<Router['extractParams']>)
-        : this.extractParams(matchedRoutePath, matchedExecResult);
+    const {
+      regexp,
+      keys,
+      params = {},
+    } = !matchedRoutePath || !matchedExecResult
+      ? ({} as ReturnType<Router['extractParams']>)
+      : this.extractParams(matchedRoutePath, matchedExecResult);
+    const query = {} as Record<string, any>;
+    url.searchParams.forEach((value, key) => {
+      if (!/\[\]$/.test(key)) {
+        query[key] = value;
+      } else {
+        key = key.slice(0, -2);
+        if (!query[key]) {
+          query[key] = [value];
+        } else {
+          query[key] = Array.isArray(query[key])
+            ? query[key].concat(value)
+            : [query[key], value];
+        }
+      }
+    });
+    const fragment = url.hash.replace(/^#/, '');
     const result: MatchResult = {
       url,
       path,
@@ -136,6 +236,8 @@ export class Router {
       regexp,
       keys,
       params,
+      query,
+      fragment,
       layoutRoute: matched?.layout,
       pageRoute: matched?.page,
     };
@@ -213,7 +315,6 @@ export class Router {
           testHref.startsWith('tel:') || // tel protocol
           anchor.hasAttribute('download') || // has download
           anchor.hasAttribute('router-ignore') || // has router-ignore
-          (anchor.pathname === locationPathname && anchor.hash !== '') || // a fragment on the current page
           (anchor.origin || this.getAnchorOrigin(anchor)) !== locationOrigin // cross origin
         )
           return;
@@ -223,8 +324,12 @@ export class Router {
           history.pushState({}, '', url.href);
           this.onRouteChanges(url);
         }
+        if (anchor.pathname === locationPathname && anchor.hash !== '') {
+          this.goFragment(anchor.hash.replace(/^#/, ''));
+        } else {
+          scrollTo(0, 0);
+        }
         e.preventDefault();
-        scrollTo(0, 0);
       });
     }
     // popstate trigger
@@ -235,6 +340,9 @@ export class Router {
   }
 
   private onRouteChanges(url: URL) {
+    if (this.fragmentManager?.url.pathname !== url.pathname) {
+      this.fragmentManager = null;
+    }
     const detail = this.match(url);
     if (this.callback) this.callback(detail);
     return dispatchEvent(new CustomEvent(ROUTE_CHANGE_EVENT, {detail}));
