@@ -8,6 +8,7 @@ export interface Route {
   component: string;
   action?: () => Promise<unknown>;
   children?: Omit<Route, 'children'>[];
+  data?: Record<string, any>;
 }
 
 export interface FragmentManager {
