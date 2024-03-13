@@ -3,7 +3,7 @@ import {
   TINI_APP_CONTEXT as BASE_TINI_APP_CONTEXT,
 } from '@tinijs/core';
 
-import {Router} from './router';
+import {Router} from './router.js';
 
 export const MODULE_NAME = 'router';
 export const MODULE_ID = `tini:${MODULE_NAME}`;

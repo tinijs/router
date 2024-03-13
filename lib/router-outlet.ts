@@ -1,9 +1,9 @@
 import {LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
 
-import {NO_OUTLET_ROUTER_ERROR} from './consts';
-import {ActivatedRoute, RouteHook, ElemHook} from './types';
-import {Router} from './router';
+import {NO_OUTLET_ROUTER_ERROR} from './consts.js';
+import {ActivatedRoute, RouteHook, ElemHook} from './types.js';
+import {Router} from './router.js';
 
 export class RouterOutletComponent extends LitElement {
   @property({type: Object}) declare readonly router: Router;

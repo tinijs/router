@@ -5,7 +5,7 @@ import {
   getQuery,
   getFragment,
   getNavIndicator,
-} from './methods';
+} from './methods.js';
 
 export function UseRouter() {
   return function (prototype: any, propertyName: string) {

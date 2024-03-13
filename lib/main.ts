@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {ComponentTypes, LifecycleHooks, registerGlobalHook} from '@tinijs/core';
 
-import {TINI_APP_CONTEXT, ROUTE_CHANGE_EVENT} from './consts';
-import {Route, RouterOptions} from './types';
-import {hideNavIndicator, showNavIndicator} from './methods';
-import {Router} from './router';
+import {TINI_APP_CONTEXT, ROUTE_CHANGE_EVENT} from './consts.js';
+import {Route, RouterOptions} from './types.js';
+import {hideNavIndicator, showNavIndicator} from './methods.js';
+import {Router} from './router.js';
 
 export function createRouter(routes: Route[], options: RouterOptions = {}) {
   const router = new Router(routes, options).init();

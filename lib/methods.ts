@@ -1,4 +1,4 @@
-import {NavIndicatorComponent, ActivatedRoute} from './types';
+import {NavIndicatorComponent, ActivatedRoute} from './types.js';
 import {
   GLOBAL_TINI,
   TINI_APP_CONTEXT,
@@ -6,7 +6,7 @@ import {
   NAV_INDICATOR,
   CLASS_ACTIVE,
   NO_ROUTER_ERROR,
-} from './consts';
+} from './consts.js';
 
 export function getRouter() {
   if (!TINI_APP_CONTEXT.router) throw new Error(NO_ROUTER_ERROR);

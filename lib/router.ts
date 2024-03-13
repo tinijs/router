@@ -9,10 +9,14 @@ import {
   RegistryItem,
   MatchResult,
   ActivatedRoute,
-} from './types';
-import {MODULE_ID, ROUTER_OUTLET_TAG_NAME, ROUTE_CHANGE_EVENT} from './consts';
-import {go, redirect, back, forward, requestChange} from './methods';
-import {RouterOutletComponent} from './router-outlet';
+} from './types.js';
+import {
+  MODULE_ID,
+  ROUTER_OUTLET_TAG_NAME,
+  ROUTE_CHANGE_EVENT,
+} from './consts.js';
+import {go, redirect, back, forward, requestChange} from './methods.js';
+import {RouterOutletComponent} from './router-outlet.js';
 
 export class Router {
   private readonly NOT_FOUND_PATH = '/**';
