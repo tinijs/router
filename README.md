@@ -1,5 +1,8 @@
 # TiniJS Router 
 
+> [!IMPORTANT]
+> This previously experiment is wrapped up, moving forward the development will happen at <https://github.com/tinijs/tinijs/tree/main/packages/router>.
+
 The official router module for the TiniJS framework. It is currently under development.
 
 Another option for adding routes to a TiniJS app is using [@vaadin/router](https://github.com/vaadin/router).
