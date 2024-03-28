@@ -1,16 +1,21 @@
 # TiniJS Router 
 
+> [!IMPORTANT]
+> This previously experiment is wrapped up, moving forward the development will happen at <https://github.com/tinijs/tinijs/tree/main/packages/router>.
+>
+> If you want to use the experimental version still, please use the version `0.16.0`.
+
 The official router module for the TiniJS framework. It is currently under development.
 
 Another option for adding routes to a TiniJS app is using [@vaadin/router](https://github.com/vaadin/router).
 
 ## Install
 
-To manually install the module: `npm i @tinijs/router`
+To manually install the module: `npm i @tinijs/router@0.16.0`
 
 It is recommended to download the [Skeleton](https://github.com/tinijs/skeleton) for a ready-to-use structured project.
 
-For more, please visit: <https://tinijs.dev> (TODO)
+For more, please visit: <https://tinijs.dev>
 
 ## Usage
 
